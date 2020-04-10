@@ -4,7 +4,7 @@ use crate::sampler::Sampler;
 use crate::volume::{Volume, PositionError};
 use crate::raw_volume::RawVolume;
 
-struct RawVolumeSampler<'a, T> where T: Default + Copy {
+pub struct RawVolumeSampler<'a, T> where T: Default + Copy {
     data: &'a Vec<T>,
     valid_region: Region,
     x_pos: i32,
@@ -52,6 +52,30 @@ impl <'a, T> RawVolumeSampler<'a, T> where T: Default + Copy {
         } else {
             Err(PositionError{})
         }
+    }
+
+    fn can_go_neg_x(&self, x: i32) -> bool {
+        x > self.valid_region.lower_x
+    }
+
+    fn can_go_neg_y(&self, y: i32) -> bool {
+        y > self.valid_region.lower_y
+    }
+
+    fn can_go_neg_z(&self, z: i32) -> bool {
+        z > self.valid_region.lower_z
+    }
+
+    fn can_go_pos_x(&self, x: i32) -> bool {
+        x < self.valid_region.upper_x
+    }
+
+    fn can_go_pos_y(&self, y: i32) -> bool {
+        y < self.valid_region.upper_y
+    }
+
+    fn can_go_pos_z(&self, z: i32) -> bool {
+        z < self.valid_region.upper_z
     }
 }
 
@@ -158,110 +182,214 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Default + Copy {
     }
 
     fn peek_voxel_1nx1ny1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1nx1ny0pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_y(self.y_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_width()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1nx1ny1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1nx0py1nz(&self) -> T {
-        unimplemented!()
-    }
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }    }
 
     fn peek_voxel_1nx0py0pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1nx0py1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1nx1py1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1nx1py0pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_y(self.y_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_width()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1nx1py1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_0px1ny1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_0px1ny0pz(&self) -> T {
-        unimplemented!()
-    }
+        if self.is_current_position_valid() && self.can_go_neg_y(self.y_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_width()) as usize]
+        } else {
+            self.border_value
+        }    }
 
     fn peek_voxel_0px1ny1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_0px0py1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_0px0py0pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() {
+            self.data[self.current_voxel.unwrap()]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_0px0py1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_0px1py1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_0px1py0pz(&self) -> T {
-        unimplemented!()
-    }
+        if self.is_current_position_valid() && self.can_go_pos_y(self.y_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_width()) as usize]
+        } else {
+            self.border_value
+        }    }
 
     fn peek_voxel_0px1py1pz(&self) -> T {
-        unimplemented!()
-    }
+        if self.is_current_position_valid() && self.can_go_pos_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }    }
 
     fn peek_voxel_1px1ny1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px1ny0pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_y(self.y_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_width()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px1ny1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px0py1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px0py0pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px0py1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px1py1nz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px1py0pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_y(self.y_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_width()) as usize]
+        } else {
+            self.border_value
+        }
     }
 
     fn peek_voxel_1px1py1pz(&self) -> T {
-        unimplemented!()
+        if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
+            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+        } else {
+            self.border_value
+        }
     }
 }
