@@ -1,6 +1,8 @@
 use crate::volume::{Volume, PositionError};
 use crate::region::Region;
 use crate::voxel::Voxel;
+use crate::sampler::Sampler;
+use crate::raw_volume_sampler::RawVolumeSampler;
 
 pub struct RawVolume<T> where T: Voxel {
     data: Vec<T>,

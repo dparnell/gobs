@@ -4,22 +4,155 @@ use crate::vertex::Vertex;
 use crate::mesh::Mesh;
 use crate::volume::Volume;
 use crate::region::Region;
-use std::ops::Fn;
 use crate::voxel::Voxel;
+use crate::sampler::Sampler;
 
-pub fn extract_cubic_mesh_custom<T, F>(volume: &dyn Volume<T>, region: &Region, result: &mut Mesh<T>, is_quad_needed: F, merge_quads: bool)
+const MAX_VERTICES_PER_POSITION: usize = 8;
+
+pub struct CubicVertex<T> where T: Voxel {
+    position: u32,
+    data: T
+}
+
+impl <T> CubicVertex<T> where T: Voxel {
+    fn new(x: u8, y: u8, z: u8, data: T) -> Self {
+        CubicVertex{
+            position: x as u32 + (y as u32 * 0x100) + (z as u32 * 0x10000),
+            data
+        }
+    }
+}
+
+#[derive(Default, Clone)]
+struct Quad {
+    v0: i32,
+    v1: i32,
+    v2: i32,
+    v3: i32
+}
+
+impl Quad {
+    fn new(v0: i32, v1: i32, v2: i32, v3: i32) -> Self {
+        Quad{
+            v0, v1, v2, v3
+        }
+    }
+}
+
+#[derive(Default, Clone)]
+struct IndexAndMaterial<T> where T: Voxel {
+    pub index: i32,
+    pub material: T
+}
+
+impl <T> IndexAndMaterial<T> where T: Voxel {
+    fn new() -> Self {
+        IndexAndMaterial{
+            index: -1,
+            material: Default::default()
+        }
+    }
+}
+
+struct Array3<T> where T: Default + Clone {
+    pub data: Vec<T>,
+    pub width: usize,
+    pub height: usize,
+    pub depth: usize,
+    pub area: usize
+}
+
+impl <'a, T> Array3<T> where T: Default + Clone {
+    fn new(width: usize, height: usize, depth: usize) -> Self {
+        Array3{
+            data: vec![Default::default(); width * height * depth],
+            width,
+            height,
+            depth,
+            area: width * height
+        }
+    }
+}
+
+fn add_vertex<T>(x: u32, y: u32, z: u32, material: T, existing_vertices: &mut Array3<IndexAndMaterial<T>>, result: &mut Mesh<CubicVertex<T>>) -> i32
+    where T: Voxel {
+
+    let width = existing_vertices.width;
+    let area = existing_vertices.area;
+
+    let data = existing_vertices.data.as_mut_slice();
+    for ct in 0 .. MAX_VERTICES_PER_POSITION {
+        let idx = x as usize + (y as usize) * width + ct * area;
+        if let Some(item) = data.get_mut(idx) {
+           if item.index == -1 {
+                let vert: CubicVertex<T> = CubicVertex::new(x as u8, y as u8, z as u8, material);
+
+               item.index = result.add_vertex(vert) as i32;
+               item.material = material;
+
+               return item.index;
+           } else {
+               if item.material == material {
+                   return item.index
+               }
+           }
+        }
+    }
+
+    return -1;
+}
+
+pub fn extract_cubic_mesh_custom<T, F>(volume: &dyn Volume<T>, sampler: &mut Sampler<T>, region: &Region, result: &mut Mesh<CubicVertex<T>>, is_quad_needed: F, merge_quads: bool)
     where T: Voxel, F: Fn(&T, &T) -> Option<T> {
 
     result.clear();
+
+    let width = (region.get_width() + 2) as usize;
+    let height = (region.get_height() + 2) as usize;
+    let depth = (region.get_depth() + 2) as usize;
+
+    let area = width * height;
+
+    let mut prev_slice_vertices: Array3<IndexAndMaterial<T>> = Array3::new(width, height, MAX_VERTICES_PER_POSITION);
+    let mut current_slice_vertices: Array3<IndexAndMaterial<T>> = Array3::new(width, height, MAX_VERTICES_PER_POSITION);
+
+    let mut neg_x_quads: Vec<Vec<Quad>> = vec![Default::default(); width];
+    let mut pos_x_quads: Vec<Vec<Quad>> = vec![Default::default(); width];
+    let mut neg_y_quads: Vec<Vec<Quad>> = vec![Default::default(); height];
+    let mut pos_y_quads: Vec<Vec<Quad>> = vec![Default::default(); height];
+    let mut neg_z_quads: Vec<Vec<Quad>> = vec![Default::default(); depth];
+    let mut pos_z_quads: Vec<Vec<Quad>> = vec![Default::default(); depth];
+
+    for z in region.lower_z ..= region.upper_z {
+        let regZ = (z - region.lower_z) as u32;
+
+        for y in region.lower_y ..= region.upper_y {
+            let regY = (y - region.lower_y) as u32;
+            sampler.set_position(region.lower_x, y, z);
+
+            for x in region.lower_x ..= region.upper_x {
+                let regX = (x - region.lower_x) as u32;
+
+                let current_voxel = sampler.get_voxel();
+                let neg_x_voxel = sampler.peek_voxel_1nx0py0pz();
+                let neg_y_voxel = sampler.peek_voxel_0px1ny0pz();
+                let neg_z_voxel = sampler.peek_voxel_0px0py1nz();
+
+                if let Some(material) = is_quad_needed(&current_voxel, &neg_x_voxel) {
+
+                }
+            }
+        }
+    }
 }
 
 
-pub fn extract_cubic_mesh<T>(volume: &dyn Volume<T>, region: &Region) -> Mesh<T> where T: Voxel {
-    let mut mesh : Mesh<T> = Mesh::new();
+pub fn extract_cubic_mesh<T>(volume: &dyn Volume<T>, sampler: &mut Sampler<T>, region: &Region) -> Mesh<CubicVertex<T>> where T: Voxel {
+    let mut mesh : Mesh<CubicVertex<T>> = Mesh::new();
 
-    extract_cubic_mesh_custom(volume, region, &mut mesh,|back, front| {
+    extract_cubic_mesh_custom(volume, sampler, region, &mut mesh,|back, front| {
         if !back.is_empty() && front.is_empty() {
-            Some(back.clone())
+            Some(*back)
         } else {
             None
         }

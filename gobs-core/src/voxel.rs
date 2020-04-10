@@ -1,4 +1,4 @@
-pub trait Voxel : Default + Copy {
+pub trait Voxel : Default + Copy + PartialEq {
     fn is_empty(self) -> bool;
 }
 

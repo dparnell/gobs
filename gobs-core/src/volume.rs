@@ -3,6 +3,7 @@ use std::fmt;
 use std::fmt::Formatter;
 use crate::region::Region;
 use crate::voxel::Voxel;
+use crate::sampler::Sampler;
 
 #[derive(Debug)]
 pub struct PositionError {
