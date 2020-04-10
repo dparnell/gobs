@@ -43,6 +43,43 @@ impl Quad {
             v0, v1, v2, v3
         }
     }
+
+    fn maybe_merge<T>(&mut self, other: &Self, mesh: &Mesh<CubicVertex<T>>) -> bool where T: Voxel {
+        //All four vertices of a given quad have the same data,
+        //so just check that the first pair of vertices match.
+        if mesh.get_vertex(self.v0 as usize).data == mesh.get_vertex(other.v0 as usize).data {
+
+            if self.v0 == other.v1 && self.v3 == other.v2 {
+                self.v0 = other.v0;
+                self.v3 = other.v3;
+
+                return true
+            }
+
+            if self.v3 == other.v0 && self.v2 == other.v1 {
+                self.v3 = other.v3;
+                self.v2 = other.v2;
+
+                return true;
+            }
+
+            if self.v1 == other.v0 && self.v2 == other.v3 {
+                self.v1 = other.v1;
+                self.v2 = other.v2;
+
+                return true;
+            }
+
+            if self.v0 == other.v3 && self.v1 == other.v2 {
+                self.v0 = other.v0;
+                self.v1 = other.v1;
+
+                return true;
+            }
+        }
+
+        false
+    }
 }
 
 #[derive(Clone)]
@@ -215,6 +252,12 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
 
         std::mem::swap(&mut current_slice_vertices, &mut prev_slice_vertices);
         current_slice_vertices.data.iter_mut().for_each(|item| { item.index = -1 })
+    }
+
+    for face in vec![pos_x_quads, neg_x_quads, pos_y_quads, neg_y_quads, pos_z_quads, neg_z_quads] {
+        for quads in face {
+
+        }
     }
 }
 
