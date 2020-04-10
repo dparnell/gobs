@@ -38,18 +38,19 @@ impl <T> CubicVertex<T> where T: Voxel {
     }
 }
 
-#[derive(Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Default, Clone, Debug)]
 struct Quad {
     v0: i32,
     v1: i32,
     v2: i32,
-    v3: i32
+    v3: i32,
+    pub merged: bool
 }
 
 impl Quad {
     fn new(v0: i32, v1: i32, v2: i32, v3: i32) -> Self {
         Quad{
-            v0, v1, v2, v3
+            v0, v1, v2, v3, merged: false
         }
     }
 
@@ -157,12 +158,29 @@ fn add_vertex<T>(x: u32, y: u32, z: u32, material: T, existing_vertices: &mut Ar
 fn perform_quad_merging<T>(quads: &mut Vec<Quad>, mesh: &Mesh<CubicVertex<T>>) -> bool
     where T: Voxel {
 
-    let count = quads.len();
-    quads.dedup_by(|a, b| {
-        b.maybe_merge(a, mesh)
-    });
+    let mut merge_found = false;
+    let mut i = 0;
+    let mut len = quads.len();
+    while i < len {
+        let (left, right) = quads.split_at_mut(i);
+        if let Some(a) = left.last_mut() {
+            if a.merged {
+                // do nothing
+            } else {
+                for b in right {
+                    if a.maybe_merge(b, mesh) {
+                        b.merged = true;
+                        merge_found = true;
+                        len = len - 1;
+                    }
+                }
+            }
+        }
+        i = i + 1;
+        quads.retain(|quad| { !quad.merged });
+    }
 
-    count != quads.len()
+    merge_found
 }
 
 pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Region, result: &mut Mesh<CubicVertex<T>>, is_quad_needed: F, merge_quads: bool)
@@ -279,7 +297,6 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
     for face in vec![pos_x_quads, neg_x_quads, pos_y_quads, neg_y_quads, pos_z_quads, neg_z_quads] {
         for mut quads in face {
             if merge_quads {
-                quads.sort();
                 while perform_quad_merging(&mut quads, &result) {}
             }
 
