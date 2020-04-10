@@ -22,6 +22,10 @@ impl Region {
         }
     }
 
+    pub fn get_volume(&self) -> i32 {
+        self.get_depth() * self.get_height() * self.get_width()
+    }
+
     pub fn get_width(&self) -> i32 {
         self.upper_x - self.lower_x + 1
     }
@@ -32,5 +36,21 @@ impl Region {
 
     pub fn get_depth(&self) -> i32 {
         self.upper_z - self.lower_z + 1
+    }
+
+    pub fn contains_point(&self, x: i32, y: i32, z: i32) -> bool {
+        x >= self.lower_x && x <= self.upper_x && y >= self.lower_y && y <= self.upper_y && z >= self.lower_z && z <= self.upper_z
+    }
+
+    pub fn contains_point_excluding_boundary(&self, x: i32, y: i32, z: i32, boundary: i32) -> bool {
+        x >= (self.lower_x + boundary) && x <= (self.upper_x - boundary) && y >= (self.lower_y + boundary) && y <= (self.upper_y - boundary) && z >= (self.lower_z + boundary) && z <= (self.upper_z - boundary)
+    }
+
+    pub fn get_lower_corner(&self) -> Vec3<i32> {
+        Vec3 {
+            x: self.lower_x,
+            y: self.lower_y,
+            z: self.lower_z
+        }
     }
 }
