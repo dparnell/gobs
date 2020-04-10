@@ -1,7 +1,6 @@
 use vek::vec3::Vec3;
 
 use crate::mesh::Mesh;
-use crate::volume::Volume;
 use crate::region::Region;
 use crate::voxel::Voxel;
 use crate::sampler::Sampler;
@@ -109,7 +108,7 @@ fn add_vertex<T>(x: u32, y: u32, z: u32, material: T, existing_vertices: &mut Ar
     return -1;
 }
 
-pub fn extract_cubic_mesh_custom<T, F>(volume: &dyn Volume<T>, sampler: &mut Sampler<T>, region: &Region, result: &mut Mesh<CubicVertex<T>>, is_quad_needed: F, merge_quads: bool)
+pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Region, result: &mut Mesh<CubicVertex<T>>, is_quad_needed: F, merge_quads: bool)
     where T: Voxel, F: Fn(&T, &T) -> Option<T> {
 
     result.clear();
@@ -162,7 +161,53 @@ pub fn extract_cubic_mesh_custom<T, F>(volume: &dyn Volume<T>, sampler: &mut Sam
                     let v3 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, result);
 
                     if let Some(v) = pos_x_quads.get_mut(reg_x as usize) {
-                        v.push(Quad::new(v0, v3, v2, v1));
+                        v.push(Quad::new(v0, v1, v2, v3));
+                    }
+                }
+
+                // Y
+                if let Some(material) = is_quad_needed(&current_voxel, &neg_y_voxel) {
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, result);
+                    let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
+                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, result);
+
+                    if let Some(v) = neg_y_quads.get_mut(reg_y as usize) {
+                        v.push(Quad::new(v0, v1, v2, v3));
+                    }
+                }
+
+                if let Some(material) = is_quad_needed(&neg_y_voxel, &current_voxel) {
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, result);
+                    let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
+                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, result);
+
+                    if let Some(v) = pos_y_quads.get_mut(reg_y as usize) {
+                        v.push(Quad::new(v0, v1, v2, v3));
+                    }
+                }
+
+                // Z
+                if let Some(material) = is_quad_needed(&current_voxel, &neg_z_voxel) {
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
+                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
+                    let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+
+                    if let Some(v) = neg_z_quads.get_mut(reg_y as usize) {
+                        v.push(Quad::new(v0, v1, v2, v3));
+                    }
+                }
+
+                if let Some(material) = is_quad_needed(&neg_z_voxel, &current_voxel) {
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
+                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
+                    let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+
+                    if let Some(v) = pos_z_quads.get_mut(reg_y as usize) {
+                        v.push(Quad::new(v0, v1, v2, v3));
                     }
                 }
             }
@@ -171,10 +216,10 @@ pub fn extract_cubic_mesh_custom<T, F>(volume: &dyn Volume<T>, sampler: &mut Sam
 }
 
 
-pub fn extract_cubic_mesh<T>(volume: &dyn Volume<T>, sampler: &mut Sampler<T>, region: &Region) -> Mesh<CubicVertex<T>> where T: Voxel {
+pub fn extract_cubic_mesh<T>(sampler: &mut dyn Sampler<T>, region: &Region) -> Mesh<CubicVertex<T>> where T: Voxel {
     let mut mesh : Mesh<CubicVertex<T>> = Mesh::new();
 
-    extract_cubic_mesh_custom(volume, sampler, region, &mut mesh,|back, front| {
+    extract_cubic_mesh_custom(sampler, region, &mut mesh,|back, front| {
         if !back.is_empty() && front.is_empty() {
             Some(*back)
         } else {
