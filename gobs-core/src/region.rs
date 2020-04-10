@@ -22,6 +22,17 @@ impl Region {
         }
     }
 
+    pub fn cubic(size: i32) -> Self {
+        Region{
+            lower_x: 0,
+            lower_y: 0,
+            lower_z: 0,
+            upper_x: size,
+            upper_y: size,
+            upper_z: size
+        }
+
+    }
     pub fn get_volume(&self) -> i32 {
         self.get_depth() * self.get_height() * self.get_width()
     }

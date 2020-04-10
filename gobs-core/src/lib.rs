@@ -1,3 +1,4 @@
+pub use vek;
 pub mod voxel;
 pub mod region;
 pub mod volume;

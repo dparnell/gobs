@@ -1,9 +1,9 @@
 use vek::vec3::Vec3;
 
 pub struct Mesh<T> {
-    indices: Vec<i32>,
-    vertices: Vec<T>,
-    offset: Vec3<f32>
+    pub indices: Vec<i32>,
+    pub vertices: Vec<T>,
+    pub offset: Vec3<i32>
 }
 
 impl <T> Mesh<T>  {
@@ -30,25 +30,17 @@ impl <T> Mesh<T>  {
         self.vertices.len() - 1
     }
 
-    pub fn get_vertex_count(&self) -> usize {
-        self.vertices.len()
-    }
-
-    pub fn get_vertex(&self, index: usize) -> &T {
-        &self.vertices[index]
-    }
-
     pub fn add_triangle(&mut self, vertex_0: i32, vertex_1: i32, vertex_2: i32) {
         self.indices.push(vertex_0);
         self.indices.push(vertex_1);
         self.indices.push(vertex_2);
     }
 
-    pub fn set_offset(&mut self, offset: Vec3<f32>) {
+    pub fn set_offset(&mut self, offset: Vec3<i32>) {
         self.offset = offset;
     }
 
-    pub fn get_offset(self) -> Vec3<f32> {
+    pub fn get_offset(self) -> Vec3<i32> {
         self.offset
     }
 }

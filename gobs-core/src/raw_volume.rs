@@ -3,10 +3,9 @@ use crate::region::Region;
 use crate::voxel::Voxel;
 
 pub struct RawVolume<T> where T: Voxel {
-    data: Vec<T>,
-    border_value: T,
-    valid_region: Region,
-
+    pub data: Vec<T>,
+    pub border_value: T,
+    pub valid_region: Region,
 }
 
 impl <T> RawVolume<T> where T: Voxel {

@@ -4,7 +4,6 @@ use crate::mesh::Mesh;
 use crate::region::Region;
 use crate::voxel::Voxel;
 use crate::sampler::Sampler;
-use std::cmp::Ordering;
 
 const MAX_VERTICES_PER_POSITION: usize = 8;
 
@@ -48,7 +47,7 @@ impl Quad {
     fn maybe_merge<T>(&mut self, other: &Self, mesh: &Mesh<CubicVertex<T>>) -> bool where T: Voxel {
         //All four vertices of a given quad have the same data,
         //so just check that the first pair of vertices match.
-        if mesh.get_vertex(self.v0 as usize).data == mesh.get_vertex(other.v0 as usize).data {
+        if mesh.vertices[self.v0 as usize].data == mesh.vertices[other.v0 as usize].data {
 
             if self.v0 == other.v1 && self.v3 == other.v2 {
                 self.v0 = other.v0;
@@ -259,6 +258,8 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
                         v.push(Quad::new(v0, v1, v2, v3));
                     }
                 }
+
+                sampler.move_positive_x();
             }
         }
 
@@ -279,6 +280,8 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
             }
         }
     }
+
+    result.set_offset(region.get_lower_corner())
 }
 
 
