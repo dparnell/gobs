@@ -1,14 +1,11 @@
-use vek::vec3::Vec3;
 use crate::volume::{Volume, PositionError};
 use crate::region::Region;
 
-pub struct RawVolume<T> where T: Default {
+pub struct RawVolume<T> where T: Default + Copy {
     data: Vec<T>,
     border_value: T,
     valid_region: Region,
-    x_pos: i32,
-    y_pos: i32,
-    z_pos: i32
+
 }
 
 impl <T> RawVolume<T> where T: Default + Copy {
@@ -17,9 +14,6 @@ impl <T> RawVolume<T> where T: Default + Copy {
             data: vec![Default::default(); region.get_volume() as usize],
             border_value: Default::default(),
             valid_region: region.clone(),
-            x_pos: 0,
-            y_pos: 0,
-            z_pos: 0
         }
     }
 
@@ -39,57 +33,15 @@ impl <T> RawVolume<T> where T: Default + Copy {
         }
     }
 
+    pub fn get_data(&self) -> &Vec<T> {
+        &self.data
+    }
+
 }
 
 impl <T> Volume<T> for RawVolume<T> where T: Default + Copy {
     fn get_region(&self) -> &Region {
         &self.valid_region
-    }
-
-    fn get_position(&self) -> Vec3<i32> {
-        Vec3{
-            x: self.x_pos,
-            y: self.y_pos,
-            z: self.z_pos
-        }
-    }
-
-    fn get_voxel(&self) -> T {
-        self.get_voxel_at(self.x_pos, self.y_pos, self.z_pos)
-    }
-
-    fn set_voxel(&mut self, voxel: T) -> Result<(), PositionError> {
-        self.set_voxel_at(self.x_pos, self.y_pos, self.y_pos, voxel)
-    }
-
-    fn set_position(&mut self, x: i32, y: i32, z: i32) {
-        self.x_pos = x;
-        self.y_pos = y;
-        self.z_pos = z;
-    }
-
-    fn move_positive_x(&mut self) {
-        self.x_pos = self.x_pos + 1;
-    }
-
-    fn move_positive_y(&mut self) {
-        self.y_pos = self.y_pos + 1;
-    }
-
-    fn move_positive_z(&mut self) {
-        self.z_pos = self.z_pos + 1;
-    }
-
-    fn move_negative_x(&mut self) {
-        self.x_pos = self.x_pos - 1;
-    }
-
-    fn move_negative_y(&mut self) {
-        self.y_pos = self.y_pos - 1;
-    }
-
-    fn move_negative_z(&mut self) {
-        self.z_pos = self.z_pos - 1;
     }
 
     fn get_voxel_at(&self, x: i32, y: i32, z: i32) -> T {
@@ -108,5 +60,9 @@ impl <T> Volume<T> for RawVolume<T> where T: Default + Copy {
 
     fn calculate_size_in_bytes(&self) -> usize {
         std::mem::size_of::<T>() * self.valid_region.get_volume() as usize
+    }
+
+    fn get_border_value(&self) -> T {
+        self.border_value
     }
 }
