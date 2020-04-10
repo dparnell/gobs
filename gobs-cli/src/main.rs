@@ -18,4 +18,5 @@ fn main() {
     let index_count = mesh.indices.len();
 
     println!("vertex count = {}, index count = {}", vertex_count, index_count);
+    println!("{:?}", mesh.vertices);
 }

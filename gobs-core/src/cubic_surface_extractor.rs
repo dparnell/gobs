@@ -4,6 +4,7 @@ use crate::mesh::Mesh;
 use crate::region::Region;
 use crate::voxel::Voxel;
 use crate::sampler::Sampler;
+use std::fmt::{Debug, Formatter};
 
 const MAX_VERTICES_PER_POSITION: usize = 8;
 
@@ -12,6 +13,14 @@ pub struct CubicVertex<T> where T: Voxel {
     pub data: T
 }
 
+impl <T> Debug for CubicVertex<T> where T: Voxel {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CubicVertex")
+            .field("position", &self.decode())
+            .field("data", &self.data)
+            .finish()
+    }
+}
 impl <T> CubicVertex<T> where T: Voxel {
     pub fn new(x: u8, y: u8, z: u8, data: T) -> Self {
         CubicVertex{
