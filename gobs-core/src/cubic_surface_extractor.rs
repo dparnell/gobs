@@ -4,6 +4,7 @@ use crate::mesh::Mesh;
 use crate::region::Region;
 use crate::voxel::Voxel;
 use crate::sampler::Sampler;
+use std::cmp::Ordering;
 
 const MAX_VERTICES_PER_POSITION: usize = 8;
 
@@ -29,7 +30,7 @@ impl <T> CubicVertex<T> where T: Voxel {
     }
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, PartialEq, PartialOrd, Eq, Ord)]
 struct Quad {
     v0: i32,
     v1: i32,
@@ -148,7 +149,12 @@ fn add_vertex<T>(x: u32, y: u32, z: u32, material: T, existing_vertices: &mut Ar
 fn perform_quad_merging<T>(quads: &mut Vec<Quad>, mesh: &Mesh<CubicVertex<T>>) -> bool
     where T: Voxel {
 
-    false
+    let count = quads.len();
+    quads.dedup_by(|a, b| {
+        b.maybe_merge(a, mesh)
+    });
+
+    count != quads.len()
 }
 
 pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Region, result: &mut Mesh<CubicVertex<T>>, is_quad_needed: F, merge_quads: bool)
@@ -260,9 +266,10 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
         current_slice_vertices.data.iter_mut().for_each(|item| { item.index = -1 })
     }
 
-    for mut face in vec![pos_x_quads, neg_x_quads, pos_y_quads, neg_y_quads, pos_z_quads, neg_z_quads] {
+    for face in vec![pos_x_quads, neg_x_quads, pos_y_quads, neg_y_quads, pos_z_quads, neg_z_quads] {
         for mut quads in face {
             if merge_quads {
+                quads.sort();
                 while perform_quad_merging(&mut quads, &result) {}
             }
 
