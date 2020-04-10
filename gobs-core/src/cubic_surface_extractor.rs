@@ -1,6 +1,5 @@
 use vek::vec3::Vec3;
 
-use crate::vertex::Vertex;
 use crate::mesh::Mesh;
 use crate::volume::Volume;
 use crate::region::Region;
@@ -10,15 +9,23 @@ use crate::sampler::Sampler;
 const MAX_VERTICES_PER_POSITION: usize = 8;
 
 pub struct CubicVertex<T> where T: Voxel {
-    position: u32,
-    data: T
+    pub position: u32,
+    pub data: T
 }
 
 impl <T> CubicVertex<T> where T: Voxel {
-    fn new(x: u8, y: u8, z: u8, data: T) -> Self {
+    pub fn new(x: u8, y: u8, z: u8, data: T) -> Self {
         CubicVertex{
             position: x as u32 + (y as u32 * 0x100) + (z as u32 * 0x10000),
             data
+        }
+    }
+
+    pub fn decode(&self) -> Vec3<u8> {
+        Vec3{
+            x: (self.position & 0xff) as u8,
+            y: ((self.position >> 8) & 0xff) as u8,
+            z: ((self.position >> 16) & 0xff) as u8
         }
     }
 }
@@ -39,14 +46,14 @@ impl Quad {
     }
 }
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 struct IndexAndMaterial<T> where T: Voxel {
     pub index: i32,
     pub material: T
 }
 
-impl <T> IndexAndMaterial<T> where T: Voxel {
-    fn new() -> Self {
+impl <T> Default for IndexAndMaterial<T> where T: Voxel {
+    fn default() -> Self {
         IndexAndMaterial{
             index: -1,
             material: Default::default()
@@ -111,8 +118,6 @@ pub fn extract_cubic_mesh_custom<T, F>(volume: &dyn Volume<T>, sampler: &mut Sam
     let height = (region.get_height() + 2) as usize;
     let depth = (region.get_depth() + 2) as usize;
 
-    let area = width * height;
-
     let mut prev_slice_vertices: Array3<IndexAndMaterial<T>> = Array3::new(width, height, MAX_VERTICES_PER_POSITION);
     let mut current_slice_vertices: Array3<IndexAndMaterial<T>> = Array3::new(width, height, MAX_VERTICES_PER_POSITION);
 
@@ -124,22 +129,41 @@ pub fn extract_cubic_mesh_custom<T, F>(volume: &dyn Volume<T>, sampler: &mut Sam
     let mut pos_z_quads: Vec<Vec<Quad>> = vec![Default::default(); depth];
 
     for z in region.lower_z ..= region.upper_z {
-        let regZ = (z - region.lower_z) as u32;
+        let reg_z = (z - region.lower_z) as u32;
 
         for y in region.lower_y ..= region.upper_y {
-            let regY = (y - region.lower_y) as u32;
+            let reg_y = (y - region.lower_y) as u32;
             sampler.set_position(region.lower_x, y, z);
 
             for x in region.lower_x ..= region.upper_x {
-                let regX = (x - region.lower_x) as u32;
+                let reg_x = (x - region.lower_x) as u32;
 
                 let current_voxel = sampler.get_voxel();
                 let neg_x_voxel = sampler.peek_voxel_1nx0py0pz();
                 let neg_y_voxel = sampler.peek_voxel_0px1ny0pz();
                 let neg_z_voxel = sampler.peek_voxel_0px0py1nz();
 
+                // X
                 if let Some(material) = is_quad_needed(&current_voxel, &neg_x_voxel) {
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v1 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
+                    let v2 = add_vertex(reg_x, reg_y + 1, reg_z + 1, material, &mut current_slice_vertices, result);
+                    let v3 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, result);
 
+                    if let Some(v) = neg_x_quads.get_mut(reg_x as usize) {
+                        v.push(Quad::new(v0, v1, v2, v3));
+                    }
+                }
+
+                if let Some(material) = is_quad_needed(&neg_x_voxel, &current_voxel) {
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v1 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
+                    let v2 = add_vertex(reg_x, reg_y + 1, reg_z + 1, material, &mut current_slice_vertices, result);
+                    let v3 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, result);
+
+                    if let Some(v) = pos_x_quads.get_mut(reg_x as usize) {
+                        v.push(Quad::new(v0, v3, v2, v1));
+                    }
                 }
             }
         }
