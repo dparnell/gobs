@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::Formatter;
 use crate::region::Region;
+use crate::voxel::Voxel;
 
 #[derive(Debug)]
 pub struct PositionError {
@@ -16,7 +17,7 @@ impl fmt::Display for PositionError {
 impl Error for PositionError {
 }
 
-pub trait Volume<T> where T: Default + Copy {
+pub trait Volume<T> where T: Voxel {
     fn get_region(&self) -> &Region;
 
     fn get_voxel_at(&self, x: i32, y: i32, z: i32) -> T;

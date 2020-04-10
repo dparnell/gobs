@@ -1,14 +1,15 @@
 use crate::volume::{Volume, PositionError};
 use crate::region::Region;
+use crate::voxel::Voxel;
 
-pub struct RawVolume<T> where T: Default + Copy {
+pub struct RawVolume<T> where T: Voxel {
     data: Vec<T>,
     border_value: T,
     valid_region: Region,
 
 }
 
-impl <T> RawVolume<T> where T: Default + Copy {
+impl <T> RawVolume<T> where T: Voxel {
     pub fn new(ref region: Region) -> Self {
         RawVolume{
             data: vec![Default::default(); region.get_volume() as usize],
@@ -39,7 +40,7 @@ impl <T> RawVolume<T> where T: Default + Copy {
 
 }
 
-impl <T> Volume<T> for RawVolume<T> where T: Default + Copy {
+impl <T> Volume<T> for RawVolume<T> where T: Voxel {
     fn get_region(&self) -> &Region {
         &self.valid_region
     }

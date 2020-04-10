@@ -3,8 +3,9 @@ use crate::region::Region;
 use crate::sampler::Sampler;
 use crate::volume::{Volume, PositionError};
 use crate::raw_volume::RawVolume;
+use crate::voxel::Voxel;
 
-pub struct RawVolumeSampler<'a, T> where T: Default + Copy {
+pub struct RawVolumeSampler<'a, T> where T: Voxel {
     data: &'a Vec<T>,
     valid_region: Region,
     x_pos: i32,
@@ -17,7 +18,7 @@ pub struct RawVolumeSampler<'a, T> where T: Default + Copy {
     border_value: T
 }
 
-impl <'a, T> RawVolumeSampler<'a, T> where T: Default + Copy {
+impl <'a, T> RawVolumeSampler<'a, T> where T: Voxel {
     pub fn new(volume: &'a RawVolume<T>) -> Self {
         let region = volume.get_region().clone();
         let x = region.lower_x;
@@ -79,7 +80,7 @@ impl <'a, T> RawVolumeSampler<'a, T> where T: Default + Copy {
     }
 }
 
-impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Default + Copy {
+impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn get_position(&self) -> Vec3<i32> {
         Vec3{
