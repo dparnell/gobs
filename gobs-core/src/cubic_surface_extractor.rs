@@ -212,6 +212,9 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
                 }
             }
         }
+
+        std::mem::swap(&mut current_slice_vertices, &mut prev_slice_vertices);
+        current_slice_vertices.data.iter_mut().for_each(|item| { item.index = -1 })
     }
 }
 
