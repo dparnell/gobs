@@ -6,6 +6,7 @@ use glium::glutin::event_loop::{EventLoop, ControlFlow};
 use glium::glutin::event::{Event, StartCause};
 
 pub mod camera;
+pub mod main_loop;
 
 pub enum Action {
     Stop,
