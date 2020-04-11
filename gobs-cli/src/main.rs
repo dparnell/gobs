@@ -12,7 +12,7 @@ fn main() {
     volume.set_voxel_at(10, 8, 8, 1).unwrap();
 
     let mut sampler = RawVolumeSampler::new(&volume);
-    let mesh = extract_cubic_mesh(&mut sampler, &Region::cubic(16));
+    let mesh = extract_cubic_mesh(&mut sampler, &Region::cubic(16)).unwrap();
 
     let vertex_count = mesh.vertices.len();
     let index_count = mesh.indices.len();
