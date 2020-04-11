@@ -183,10 +183,10 @@ fn perform_quad_merging<T>(quads: &mut Vec<Quad>, mesh: &Mesh<CubicVertex<T>>) -
     merge_found
 }
 
-pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Region, result: &mut Mesh<CubicVertex<T>>, is_quad_needed: F, merge_quads: bool)
+pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Region, mesh: &mut Mesh<CubicVertex<T>>, is_quad_needed: F, merge_quads: bool)
     where T: Voxel, F: Fn(&T, &T) -> Option<T> {
 
-    result.clear();
+    mesh.clear();
 
     let width = (region.get_width() + 2) as usize;
     let height = (region.get_height() + 2) as usize;
@@ -219,10 +219,10 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
 
                 // X
                 if let Some(material) = is_quad_needed(&current_voxel, &neg_x_voxel) {
-                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
-                    let v1 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
-                    let v2 = add_vertex(reg_x, reg_y + 1, reg_z + 1, material, &mut current_slice_vertices, result);
-                    let v3 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, result);
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
+                    let v1 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh);
+                    let v2 = add_vertex(reg_x, reg_y + 1, reg_z + 1, material, &mut current_slice_vertices, mesh);
+                    let v3 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, mesh);
 
                     if let Some(v) = neg_x_quads.get_mut(reg_x as usize) {
                         v.push(Quad::new(v0, v1, v2, v3));
@@ -230,10 +230,10 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
                 }
 
                 if let Some(material) = is_quad_needed(&neg_x_voxel, &current_voxel) {
-                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
-                    let v1 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
-                    let v2 = add_vertex(reg_x, reg_y + 1, reg_z + 1, material, &mut current_slice_vertices, result);
-                    let v3 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, result);
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
+                    let v1 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh);
+                    let v2 = add_vertex(reg_x, reg_y + 1, reg_z + 1, material, &mut current_slice_vertices, mesh);
+                    let v3 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, mesh);
 
                     if let Some(v) = pos_x_quads.get_mut(reg_x as usize) {
                         v.push(Quad::new(v0, v1, v2, v3));
@@ -242,10 +242,10 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
 
                 // Y
                 if let Some(material) = is_quad_needed(&current_voxel, &neg_y_voxel) {
-                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
-                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, result);
-                    let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
-                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, result);
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
+                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, mesh);
+                    let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh);
+                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, mesh);
 
                     if let Some(v) = neg_y_quads.get_mut(reg_y as usize) {
                         v.push(Quad::new(v0, v1, v2, v3));
@@ -253,10 +253,10 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
                 }
 
                 if let Some(material) = is_quad_needed(&neg_y_voxel, &current_voxel) {
-                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
-                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, result);
-                    let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, result);
-                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, result);
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
+                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, mesh);
+                    let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh);
+                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, mesh);
 
                     if let Some(v) = pos_y_quads.get_mut(reg_y as usize) {
                         v.push(Quad::new(v0, v1, v2, v3));
@@ -265,10 +265,10 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
 
                 // Z
                 if let Some(material) = is_quad_needed(&current_voxel, &neg_z_voxel) {
-                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
-                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
-                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
-                    let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
+                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh);
+                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh);
+                    let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
 
                     if let Some(v) = neg_z_quads.get_mut(reg_y as usize) {
                         v.push(Quad::new(v0, v1, v2, v3));
@@ -276,10 +276,10 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
                 }
 
                 if let Some(material) = is_quad_needed(&neg_z_voxel, &current_voxel) {
-                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, result);
-                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
-                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, result);
-                    let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, result);
+                    let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
+                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh);
+                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh);
+                    let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, mesh);
 
                     if let Some(v) = pos_z_quads.get_mut(reg_y as usize) {
                         v.push(Quad::new(v0, v1, v2, v3));
@@ -297,17 +297,18 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
     for face in vec![pos_x_quads, neg_x_quads, pos_y_quads, neg_y_quads, pos_z_quads, neg_z_quads] {
         for mut quads in face {
             if merge_quads {
-                while perform_quad_merging(&mut quads, &result) {}
+                while perform_quad_merging(&mut quads, &mesh) {}
             }
 
             for quad in quads {
-                result.add_triangle(quad.v0, quad.v1, quad.v2);
-                result.add_triangle(quad.v0, quad.v2, quad.v3);
+                mesh.add_triangle(quad.v0, quad.v1, quad.v2);
+                mesh.add_triangle(quad.v0, quad.v2, quad.v3);
             }
         }
     }
 
-    result.set_offset(region.get_lower_corner())
+    mesh.set_offset(region.get_lower_corner());
+    mesh.remove_unused_vertices();
 }
 
 
@@ -322,6 +323,5 @@ pub fn extract_cubic_mesh<T>(sampler: &mut dyn Sampler<T>, region: &Region) -> M
         }
     }, true);
 
-    mesh.remove_unused_vertices();
     mesh
 }
