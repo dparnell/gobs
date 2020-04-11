@@ -16,3 +16,18 @@ fn basic_case() {
     assert_eq!(mesh.vertices.len(), 8);
     assert_eq!(mesh.indices.len(), 36);
 }
+
+#[test]
+fn combine_two_voxels_case() {
+    let region = Region::cubic(16);
+    let mut volume: RawVolume<i32> = RawVolume::new(region);
+    volume.set_voxel_at(8, 8, 8, 1).unwrap();
+    volume.set_voxel_at(9, 8, 8, 1).unwrap();
+
+    let mut sampler = RawVolumeSampler::new(&volume);
+    let mesh = extract_cubic_mesh(&mut sampler, &Region::cubic(16)).unwrap();
+
+    assert_eq!(mesh.vertices.len(), 8);
+    assert_eq!(mesh.indices.len(), 36);
+}
+

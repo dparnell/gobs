@@ -144,10 +144,10 @@ fn add_vertex<T>(x: u32, y: u32, z: u32, material: T, existing_vertices: &mut Ar
                item.material = material;
 
                return Some(item.index);
-           } else {
-               if item.material == material {
-                   return Some(item.index)
-               }
+           }
+
+           if item.material == material {
+               return Some(item.index)
            }
         }
     }
@@ -244,9 +244,9 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
                 // Y
                 if let Some(material) = is_quad_needed(&current_voxel, &neg_y_voxel) {
                     let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
-                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, mesh)?;
+                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
                     let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh)?;
-                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, mesh)?;
+                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh)?;
 
                     if let Some(v) = neg_y_quads.get_mut(reg_y as usize) {
                         v.push(Quad::new(v0, v1, v2, v3));
@@ -255,9 +255,9 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
 
                 if let Some(material) = is_quad_needed(&neg_y_voxel, &current_voxel) {
                     let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
-                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut current_slice_vertices, mesh)?;
+                    let v1 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
                     let v2 = add_vertex(reg_x + 1, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh)?;
-                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut prev_slice_vertices, mesh)?;
+                    let v3 = add_vertex(reg_x, reg_y, reg_z + 1, material, &mut current_slice_vertices, mesh)?;
 
                     if let Some(v) = pos_y_quads.get_mut(reg_y as usize) {
                         v.push(Quad::new(v0, v3, v2, v1));
@@ -267,8 +267,8 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
                 // Z
                 if let Some(material) = is_quad_needed(&current_voxel, &neg_z_voxel) {
                     let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
-                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh)?;
-                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh)?;
+                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, mesh)?;
+                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut prev_slice_vertices, mesh)?;
                     let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
 
                     if let Some(v) = neg_z_quads.get_mut(reg_y as usize) {
@@ -278,8 +278,8 @@ pub fn extract_cubic_mesh_custom<T, F>(sampler: &mut dyn Sampler<T>, region: &Re
 
                 if let Some(material) = is_quad_needed(&neg_z_voxel, &current_voxel) {
                     let v0 = add_vertex(reg_x, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
-                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh)?;
-                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut current_slice_vertices, mesh)?;
+                    let v1 = add_vertex(reg_x, reg_y + 1, reg_z, material, &mut prev_slice_vertices, mesh)?;
+                    let v2 = add_vertex(reg_x + 1, reg_y + 1, reg_z, material, &mut prev_slice_vertices, mesh)?;
                     let v3 = add_vertex(reg_x + 1, reg_y, reg_z, material, &mut prev_slice_vertices, mesh)?;
 
                     if let Some(v) = pos_z_quads.get_mut(reg_y as usize) {
