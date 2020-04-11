@@ -322,5 +322,6 @@ pub fn extract_cubic_mesh<T>(sampler: &mut dyn Sampler<T>, region: &Region) -> M
         }
     }, true);
 
+    mesh.remove_unused_vertices();
     mesh
 }

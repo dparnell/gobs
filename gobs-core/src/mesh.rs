@@ -43,4 +43,29 @@ impl <T> Mesh<T>  {
     pub fn get_offset(self) -> Vec3<i32> {
         self.offset
     }
+
+    pub fn remove_unused_vertices(&mut self) {
+        let vert_count = self.vertices.len();
+        let mut is_vertex_used = vec![false; vert_count];
+        for i in &self.indices {
+            is_vertex_used[*i as usize] = true;
+        }
+
+        let mut used_count = 0;
+        let mut new_pos = vec![0; vert_count];
+        for i in 0..vert_count {
+            if is_vertex_used[i] {
+                if used_count != i {
+                    self.vertices.swap(used_count, i);
+                }
+                new_pos[i] = used_count;
+                used_count = used_count + 1
+            }
+        }
+
+        self.vertices.drain(used_count..vert_count);
+        for i in 0..self.indices.len() {
+            self.indices[i] = new_pos[self.indices[i] as usize] as i32;
+        }
+    }
 }
