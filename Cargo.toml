@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "gobs-core",
-    "gobs-cli"
+    "gobs-cli",
+    "gobs-examples"
 ]
