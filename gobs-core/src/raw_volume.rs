@@ -17,7 +17,7 @@ impl <T> RawVolume<T> where T: Voxel {
         }
     }
 
-    fn get_offset(&self, x: i32, y: i32, z: i32) -> Result<usize, PositionError> {
+    fn get_offset(&self, x: i32, y: i32, z: i32) -> Option<usize> {
         if self.valid_region.contains_point(x, y, z) {
             let corner = self.valid_region.get_lower_corner();
             let local_x = x - corner.x;
@@ -27,9 +27,9 @@ impl <T> RawVolume<T> where T: Voxel {
             let width = self.valid_region.get_width();
             let height = self.valid_region.get_height();
 
-            Ok((local_x + local_y * width + local_z * width * height) as usize)
+            Some((local_x + local_y * width + local_z * width * height) as usize)
         } else {
-            Err(PositionError{})
+            None
         }
     }
 
@@ -37,6 +37,9 @@ impl <T> RawVolume<T> where T: Voxel {
         &self.data
     }
 
+    pub fn set_border_value(&mut self, value: T) {
+        self.border_value = value;
+    }
 }
 
 impl <T> Volume<T> for RawVolume<T> where T: Voxel {
@@ -45,17 +48,11 @@ impl <T> Volume<T> for RawVolume<T> where T: Voxel {
     }
 
     fn get_voxel_at(&self, x: i32, y: i32, z: i32) -> T {
-        match self.get_offset(x, y, z) {
-            Ok(offset) => self.data[offset],
-            _ => self.border_value
-        }
+        self.get_offset(x, y, z).map_or(self.border_value, |offset| { self.data[offset] })
     }
 
     fn set_voxel_at(&mut self, x: i32, y: i32, z: i32, voxel: T) -> Result<(), PositionError> {
-        let offset = self.get_offset(x,y,z)?;
-        self.data[offset] = voxel;
-
-        Ok(())
+        self.get_offset(x, y, z).map_or(Err(PositionError{}),|offset| { self.data[offset] = voxel; Ok(()) })
     }
 
     fn calculate_size_in_bytes(&self) -> usize {

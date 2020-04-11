@@ -11,7 +11,7 @@ pub struct RawVolumeSampler<'a, T> where T: Voxel {
     x_pos: i32,
     y_pos: i32,
     z_pos: i32,
-    current_voxel: Option<usize>,
+    current_offset: Option<usize>,
     current_x_valid: bool,
     current_y_valid: bool,
     current_z_valid: bool,
@@ -31,7 +31,7 @@ impl <'a, T> RawVolumeSampler<'a, T> where T: Voxel {
             x_pos: x,
             y_pos: y,
             z_pos: z,
-            current_voxel: Some(0),
+            current_offset: Some(0),
             current_x_valid: true,
             current_y_valid: true,
             current_z_valid: true,
@@ -91,7 +91,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
     }
 
     fn get_voxel(&self) -> T {
-        match self.current_voxel {
+        match self.current_offset {
             Some(offset) => self.data[offset],
             _ => self.border_value
         }
@@ -107,8 +107,8 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
         self.current_z_valid = self.valid_region.contains_point_in_z(z);
 
         match self.get_offset(x, y, z) {
-            Ok(offset) => self.current_voxel = Some(offset),
-            _ => self.current_voxel = None
+            Ok(offset) => self.current_offset = Some(offset),
+            _ => self.current_offset = None
         }
     }
 
@@ -117,9 +117,9 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
         self.x_pos = self.x_pos + 1;
         self.current_x_valid = self.valid_region.contains_point_in_x(self.x_pos);
         if was_valid && self.is_current_position_valid() {
-            self.current_voxel = Some(self.current_voxel.unwrap() + 1);
+            self.current_offset = Some(self.current_offset.unwrap() + 1);
         } else {
-            self.current_voxel = None
+            self.current_offset = None
         }
     }
 
@@ -128,9 +128,9 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
         self.y_pos = self.y_pos + 1;
         self.current_y_valid = self.valid_region.contains_point_in_y(self.y_pos);
         if was_valid && self.is_current_position_valid() {
-            self.current_voxel = Some(self.current_voxel.unwrap() + self.valid_region.get_width() as usize);
+            self.current_offset = Some(self.current_offset.unwrap() + self.valid_region.get_width() as usize);
         } else {
-            self.current_voxel = None
+            self.current_offset = None
         }
     }
 
@@ -139,9 +139,9 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
         self.z_pos = self.z_pos + 1;
         self.current_z_valid = self.valid_region.contains_point_in_z(self.z_pos);
         if was_valid && self.is_current_position_valid() {
-            self.current_voxel = Some(self.current_voxel.unwrap() + self.valid_region.get_area() as usize)
+            self.current_offset = Some(self.current_offset.unwrap() + self.valid_region.get_area() as usize)
         } else {
-            self.current_voxel = None
+            self.current_offset = None
         }
     }
 
@@ -150,9 +150,9 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
         self.x_pos = self.x_pos - 1;
         self.current_x_valid = self.valid_region.contains_point_in_x(self.x_pos);
         if was_valid && self.is_current_position_valid() {
-            self.current_voxel = Some(self.current_voxel.unwrap() - 1);
+            self.current_offset = Some(self.current_offset.unwrap() - 1);
         } else {
-            self.current_voxel = None
+            self.current_offset = None
         }
     }
 
@@ -161,9 +161,9 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
         self.y_pos = self.y_pos - 1;
         self.current_y_valid = self.valid_region.contains_point_in_y(self.y_pos);
         if was_valid && self.is_current_position_valid() {
-            self.current_voxel = Some(self.current_voxel.unwrap() - self.valid_region.get_width() as usize);
+            self.current_offset = Some(self.current_offset.unwrap() - self.valid_region.get_width() as usize);
         } else {
-            self.current_voxel = None
+            self.current_offset = None
         }
     }
 
@@ -172,9 +172,9 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
         self.z_pos = self.z_pos - 1;
         self.current_z_valid = self.valid_region.contains_point_in_z(self.z_pos);
         if was_valid && self.is_current_position_valid() {
-            self.current_voxel = Some(self.current_voxel.unwrap() - self.valid_region.get_area() as usize)
+            self.current_offset = Some(self.current_offset.unwrap() - self.valid_region.get_area() as usize)
         } else {
-            self.current_voxel = None
+            self.current_offset = None
         }
     }
 
@@ -184,7 +184,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx1ny1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -192,7 +192,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx1ny0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_y(self.y_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_width()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 - self.valid_region.get_width()) as usize]
         } else {
             self.border_value
         }
@@ -200,7 +200,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx1ny1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -208,14 +208,14 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx0py1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }    }
 
     fn peek_voxel_1nx0py0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1) as usize]
         } else {
             self.border_value
         }
@@ -223,7 +223,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx0py1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -231,7 +231,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx1py1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -239,7 +239,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx1py0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_y(self.y_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_width()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 + self.valid_region.get_width()) as usize]
         } else {
             self.border_value
         }
@@ -247,7 +247,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1nx1py1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - 1 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - 1 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -255,7 +255,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_0px1ny1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -263,14 +263,15 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_0px1ny0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_y(self.y_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_width()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - self.valid_region.get_width()) as usize]
         } else {
             self.border_value
-        }    }
+        }
+    }
 
     fn peek_voxel_0px1ny1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -278,7 +279,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_0px0py1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -286,7 +287,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_0px0py0pz(&self) -> T {
         if self.is_current_position_valid() {
-            self.data[self.current_voxel.unwrap()]
+            self.data[self.current_offset.unwrap()]
         } else {
             self.border_value
         }
@@ -294,7 +295,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_0px0py1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -302,7 +303,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_0px1py1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -310,21 +311,21 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_0px1py0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_y(self.y_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_width()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + self.valid_region.get_width()) as usize]
         } else {
             self.border_value
         }    }
 
     fn peek_voxel_0px1py1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }    }
 
     fn peek_voxel_1px1ny1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 - self.valid_region.get_width() - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -332,7 +333,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px1ny0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_y(self.y_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_width()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 - self.valid_region.get_width()) as usize]
         } else {
             self.border_value
         }
@@ -340,7 +341,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px1ny1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 - self.valid_region.get_width() + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -348,7 +349,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px0py1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -356,7 +357,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px0py0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1) as usize]
         } else {
             self.border_value
         }
@@ -364,7 +365,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px0py1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -372,7 +373,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px1py1nz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_neg_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 + self.valid_region.get_width() - self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
@@ -380,7 +381,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px1py0pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_y(self.y_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_width()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 + self.valid_region.get_width()) as usize]
         } else {
             self.border_value
         }
@@ -388,7 +389,7 @@ impl<'a, T> Sampler<T> for RawVolumeSampler<'a, T> where T: Voxel {
 
     fn peek_voxel_1px1py1pz(&self) -> T {
         if self.is_current_position_valid() && self.can_go_pos_x(self.x_pos) && self.can_go_pos_y(self.y_pos) && self.can_go_pos_z(self.z_pos) {
-            self.data[(self.current_voxel.unwrap() as i32 + 1 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
+            self.data[(self.current_offset.unwrap() as i32 + 1 + self.valid_region.get_width() + self.valid_region.get_area()) as usize]
         } else {
             self.border_value
         }
