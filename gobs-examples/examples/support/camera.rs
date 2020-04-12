@@ -26,7 +26,7 @@ impl CameraState {
         CameraState {
             mode,
             aspect_ratio: 1024.0 / 768.0,
-            position: (0.1, 0.1, 1.0),
+            position: (0.1, 1.0, 1.0),
             spherical_position: (0.0, 0.0, 1.0),
             look_direction: (0.0, 0.0, -1.0),
             forward: (0.0, 0.0, -1.0),

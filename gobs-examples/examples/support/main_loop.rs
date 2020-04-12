@@ -73,6 +73,8 @@ where F: Fn(&Display) -> VertexBufferAny {
 
                 out vec4 worldPosition;
                 out vec3 voxelColor;
+                out vec3 v_V;
+                out vec3 v_P;
 
                 void main()
                 {
@@ -82,6 +84,9 @@ where F: Fn(&Display) -> VertexBufferAny {
                     worldPosition = modelMatrix * position;
                     vec4 cameraPosition = viewMatrix * worldPosition;
                     gl_Position = projectionMatrix * cameraPosition;
+
+                    v_P = worldPosition.xyz;
+	                v_V = gl_Position.xyz;
                 }
             ",
 
@@ -92,22 +97,24 @@ where F: Fn(&Display) -> VertexBufferAny {
                 in vec3 voxelColor;
                 in vec4 worldPosition;
 
+                in vec3 v_V;
+                in vec3 v_P;
+
                 // Output data
                 out vec3 outputColor;
 
                 void main()
                 {
-                    vec3 worldSpaceNormal = normalize(cross(dFdy(worldPosition.xyz), dFdx(worldPosition.xyz)));
-                    worldSpaceNormal *= -1.0; // Not sure why we have to invert this... to be checked.
+                    vec3 N = normalize(cross(dFdy(v_P), dFdx(v_P))); // N is the world normal
+                    vec3 V = normalize(v_V);
+                    vec3 R = reflect(V, N);
+                    vec3 L = normalize(vec3(0, 0, 1));
 
-                    // Basic lighting calculation for overhead light.
-                    float ambient = 0.5;
-                    float diffuse = 0.7;
-                    vec3 lightDir = normalize(vec3(0.2, 0.8, 0.4));
-                    float nDotL = clamp(dot(normalize(worldSpaceNormal), lightDir), 0.0, 1.0);
-                    float lightIntensity = ambient + diffuse * nDotL;
+                    vec3 ambient = voxelColor * 0.5;
+                    vec3 diffuse = voxelColor * max(dot(L, N), 0.0);
+                    vec3 specular = voxelColor * pow(max(dot(R, L), 0.0), 0.7);
 
-                    outputColor = voxelColor * lightIntensity;
+                    outputColor = ambient + diffuse + specular;
                 }
             ",
         },
