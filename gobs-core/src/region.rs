@@ -31,8 +31,19 @@ impl Region {
             upper_y: size,
             upper_z: size
         }
-
     }
+
+    pub fn sized(width: i32, height: i32, depth: i32) -> Self {
+        Region{
+            lower_x: 0,
+            lower_y: 0,
+            lower_z: 0,
+            upper_x: width,
+            upper_y: height,
+            upper_z: depth
+        }
+    }
+
     pub fn get_volume(&self) -> i32 {
         self.get_depth() * self.get_height() * self.get_width()
     }

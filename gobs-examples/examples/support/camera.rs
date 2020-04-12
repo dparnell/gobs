@@ -3,7 +3,8 @@ extern crate glutin;
 pub struct CameraState {
     aspect_ratio: f32,
     position: (f32, f32, f32),
-    direction: (f32, f32, f32),
+    look_direction: (f32, f32, f32),
+    forward: (f32, f32, f32),
 
     moving_up: bool,
     moving_left: bool,
@@ -18,7 +19,8 @@ impl CameraState {
         CameraState {
             aspect_ratio: 1024.0 / 768.0,
             position: (0.1, 0.1, 1.0),
-            direction: (0.0, 0.0, -1.0),
+            look_direction: (0.0, 0.0, -1.0),
+            forward: (0.0, 0.0, -1.0),
             moving_up: false,
             moving_left: false,
             moving_down: false,
@@ -32,10 +34,25 @@ impl CameraState {
         self.position = pos;
     }
 
-    pub fn set_direction(&mut self, dir: (f32, f32, f32)) {
-        self.direction = dir;
+    pub fn get_position(&self) -> (f32, f32, f32) {
+        self.position
     }
 
+    pub fn set_look_direction(&mut self, dir: (f32, f32, f32)) {
+        self.look_direction = dir;
+    }
+
+    pub fn get_look_direction(&self) -> (f32, f32, f32) {
+        self.look_direction
+    }
+
+    pub fn set_forward(&mut self, dir: (f32, f32, f32)) {
+        self.forward = dir;
+    }
+
+    pub fn get_forward(&self) -> (f32, f32, f32) {
+        self.forward
+    }
     pub fn get_perspective(&self) -> [[f32; 4]; 4] {
         let fov: f32 = 3.141592 / 2.0;
         let zfar = 1024.0;
@@ -54,7 +71,7 @@ impl CameraState {
 
     pub fn get_view(&self) -> [[f32; 4]; 4] {
         let f = {
-            let f = self.direction;
+            let f = self.look_direction;
             let len = f.0 * f.0 + f.1 * f.1 + f.2 * f.2;
             let len = len.sqrt();
             (f.0 / len, f.1 / len, f.2 / len)
@@ -91,7 +108,7 @@ impl CameraState {
 
     pub fn update(&mut self) {
         let f = {
-            let f = self.direction;
+            let f = self.forward;
             let len = f.0 * f.0 + f.1 * f.1 + f.2 * f.2;
             let len = len.sqrt();
             (f.0 / len, f.1 / len, f.2 / len)

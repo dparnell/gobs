@@ -8,7 +8,7 @@ use gobs_core::raw_volume_sampler::RawVolumeSampler;
 use gobs_core::cubic_surface_extractor::extract_cubic_mesh;
 use crate::support::main_loop::{run, VoxelVertex};
 
-mod support;
+pub mod support;
 
 const RED: u32   = 0x00ff0000;
 const GREEN: u32 = 0x0000ff00;

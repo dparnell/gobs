@@ -81,7 +81,7 @@ where F: Fn(&Display) -> VertexBufferAny {
                     worldSpaceNormal *= -1.0; // Not sure why we have to invert this... to be checked.
 
                     // Basic lighting calculation for overhead light.
-                    float ambient = 0.3;
+                    float ambient = 0.5;
                     float diffuse = 0.7;
                     vec3 lightDir = normalize(vec3(0.2, 0.8, 0.4));
                     float nDotL = clamp(dot(normalize(worldSpaceNormal), lightDir), 0.0, 1.0);
@@ -98,6 +98,10 @@ where F: Fn(&Display) -> VertexBufferAny {
 
     // the main loop
     support::start_loop(event_loop, move |events| {
+        let (cx, cy, cz) = camera.get_position();
+
+        // point the camera back at the origin
+        camera.set_look_direction((-cx, -cy, -cz));
         camera.update();
 
         // building the uniforms
