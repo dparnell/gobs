@@ -3,7 +3,11 @@ use glium::{glutin, Surface};
 use glium::vertex::VertexBufferAny;
 use glium::Display;
 use crate::support;
+use crate::support::camera::Mode;
+use crate::support::{rotation_matrix, multiply_matrix, scale_matrix};
 
+use glutin::dpi::PhysicalPosition;
+use glutin::event::*;
 
 #[derive(Copy, Clone)]
 pub struct VoxelVertex {
@@ -11,6 +15,22 @@ pub struct VoxelVertex {
     pub colour: u32
 }
 implement_vertex!(VoxelVertex, position, colour);
+
+struct State {
+    r: f32,
+    th: f32,
+    phi: f32,
+
+    moving_up: bool,
+    moving_left: bool,
+    moving_down: bool,
+    moving_right: bool,
+    moving_in: bool,
+    moving_out: bool,
+
+    mouse_down: bool,
+    last_mouse: Option<PhysicalPosition<f64>>
+}
 
 pub fn run<F>(build_display_list: F)
 where F: Fn(&Display) -> VertexBufferAny {
@@ -94,21 +114,22 @@ where F: Fn(&Display) -> VertexBufferAny {
     ).unwrap();
 
     //
-    let mut camera = support::camera::CameraState::new();
+    let mut camera = support::camera::CameraState::new(Mode::Cartesian);
+    let (cx, cy, cz) = camera.get_position();
+
+    // point the camera back at the origin
+    camera.set_look_direction((-cx, -cy, -cz));
+    camera.update();
+
+    let mut state = State{ r: 1.0, th: 0.0, phi: 0.0, moving_up: false, moving_left: false, moving_down: false, moving_right: false, moving_in: false, moving_out: false, mouse_down: false, last_mouse: None };
 
     // the main loop
     support::start_loop(event_loop, move |events| {
-        let (cx, cy, cz) = camera.get_position();
-
-        // point the camera back at the origin
-        camera.set_look_direction((-cx, -cy, -cz));
-        camera.update();
-
         // building the uniforms
         let uniforms = uniform! {
             projectionMatrix: camera.get_perspective(),
             viewMatrix: camera.get_view(),
-            modelMatrix: support::identity_matrix(),
+            modelMatrix: state.matrix(),
         };
 
         // draw parameters
@@ -136,7 +157,7 @@ where F: Fn(&Display) -> VertexBufferAny {
             match event {
                 glutin::event::Event::WindowEvent { event, .. } => match event {
                     glutin::event::WindowEvent::CloseRequested => action = support::Action::Stop,
-                    ev => camera.process_input(&ev),
+                    ev => state.process_input(&ev),
                 },
                 _ => (),
             }
@@ -144,4 +165,82 @@ where F: Fn(&Display) -> VertexBufferAny {
 
         action
     });
+}
+
+impl State {
+    fn matrix(&self) -> [[f32; 4]; 4] {
+        let m1 = rotation_matrix([1.0, 0.0, 0.0], self.th);
+        let m2 = rotation_matrix([0.0, 0.0, 1.0], self.phi);
+        multiply_matrix(multiply_matrix(m1, m2), scale_matrix(self.r))
+    }
+
+    fn process_input(&mut self, event: &glutin::event::WindowEvent) {
+        let input = match *event {
+            glutin::event::WindowEvent::KeyboardInput { input, .. } => input,
+            glutin::event::WindowEvent::MouseWheel { delta, ..}=> {
+
+                match delta {
+                    glutin::event::MouseScrollDelta::LineDelta(_x, y) => {
+                        self.r += y * 0.1;
+                    },
+                    _ => ()
+                }
+                return;
+            },
+
+            glutin::event::WindowEvent::MouseInput { state, button, .. } => {
+                if button == MouseButton::Left {
+                    self.mouse_down = state == ElementState::Pressed;
+                }
+                return;
+            },
+            glutin::event::WindowEvent::CursorMoved { position, .. } => {
+                if self.mouse_down {
+                    if let Some(pos) = self.last_mouse {
+                        self.th += ((position.y - pos.y) * 0.01) as f32;
+                        self.phi += ((position.x - pos.x) * 0.01) as f32;
+                    }
+
+                    self.last_mouse = Some(position);
+                } else {
+                    self.last_mouse = None
+                }
+                return;
+            },
+            _ => return,
+        };
+        let pressed = input.state == glutin::event::ElementState::Pressed;
+        let key = match input.virtual_keycode {
+            Some(key) => key,
+            None => return,
+        };
+        match key {
+            glutin::event::VirtualKeyCode::Up => self.moving_up = pressed,
+            glutin::event::VirtualKeyCode::Down => self.moving_down = pressed,
+            glutin::event::VirtualKeyCode::Left => self.moving_left = pressed,
+            glutin::event::VirtualKeyCode::Right => self.moving_right = pressed,
+            glutin::event::VirtualKeyCode::PageUp => self.moving_in = pressed,
+            glutin::event::VirtualKeyCode::PageDown => self.moving_out = pressed,
+            _ => (),
+        };
+
+        if self.moving_right {
+            self.phi += 0.01;
+        }
+        if self.moving_left {
+            self.phi -= 0.01;
+        }
+        if self.moving_up {
+            self.th += 0.01;
+        }
+        if self.moving_down {
+            self.th -= 0.01;
+        }
+        if self.moving_out {
+            self.r += 0.25;
+        }
+        if self.moving_in {
+            self.r -= 0.25;
+        }
+    }
 }

@@ -22,6 +22,15 @@ pub fn identity_matrix() -> [[f32; 4]; 4] {
     ]
 }
 
+pub fn scale_matrix(s: f32) -> [[f32; 4]; 4] {
+    [
+        [  s, 0.0, 0.0, 0.0],
+        [0.0,   s, 0.0, 0.0],
+        [0.0, 0.0,   s, 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ]
+}
+
 pub fn rotation_matrix(axis: [f32; 3], angle: f32) -> [[f32; 4]; 4] {
     let (s, c) = angle.sin_cos();
     let oc = 1.0 - c;
@@ -32,6 +41,21 @@ pub fn rotation_matrix(axis: [f32; 3], angle: f32) -> [[f32; 4]; 4] {
         [oc *  axis[2] *  axis[0] -  axis[1] * s,  oc *  axis[1] *  axis[2] +  axis[0] * s,  oc *  axis[2] *  axis[2] + c,             0.0],
         [0.0,                                      0.0,                                      0.0,                                      1.0]
     ]
+}
+
+pub fn multiply_matrix(a: [[f32; 4]; 4], b: [[f32; 4]; 4]) -> [[f32; 4]; 4] {
+    let mut result = identity_matrix();
+
+    for i in 0..=3 {
+        for j in 0..=3 {
+            result[j][i] = 0.0;
+
+            for k in 0..=3 {
+                result[j][i] += a[k][i] * b[j][k];
+            }
+        }
+    }
+    result
 }
 
 pub fn start_loop<F>(event_loop: EventLoop<()>, mut callback: F)->! where F: 'static + FnMut(&Vec<Event<()>>) -> Action {

@@ -1,8 +1,15 @@
 extern crate glutin;
 
+pub enum Mode {
+    Cartesian,
+    Spherical,
+}
+
 pub struct CameraState {
+    mode: Mode,
     aspect_ratio: f32,
     position: (f32, f32, f32),
+    spherical_position: (f32, f32, f32),
     look_direction: (f32, f32, f32),
     forward: (f32, f32, f32),
 
@@ -15,10 +22,12 @@ pub struct CameraState {
 }
 
 impl CameraState {
-    pub fn new() -> CameraState {
+    pub fn new(mode: Mode) -> CameraState {
         CameraState {
+            mode,
             aspect_ratio: 1024.0 / 768.0,
             position: (0.1, 0.1, 1.0),
+            spherical_position: (0.0, 0.0, 1.0),
             look_direction: (0.0, 0.0, -1.0),
             forward: (0.0, 0.0, -1.0),
             moving_up: false,
@@ -106,7 +115,7 @@ impl CameraState {
         ]
     }
 
-    pub fn update(&mut self) {
+    fn update_cartesian(&mut self) {
         let f = {
             let f = self.forward;
             let len = f.0 * f.0 + f.1 * f.1 + f.2 * f.2;
@@ -164,6 +173,40 @@ impl CameraState {
             self.position.0 -= f.0 * 0.01;
             self.position.1 -= f.1 * 0.01;
             self.position.2 -= f.2 * 0.01;
+        }
+    }
+
+    fn update_spherical(&mut self) {
+        if self.moving_up {
+            self.spherical_position.2 += 0.01;
+        }
+        if self.moving_down {
+            self.spherical_position.2 -= 0.01;
+        }
+        if self.moving_left {
+            self.spherical_position.0 += 0.01;
+        }
+        if self.moving_right {
+            self.spherical_position.0 -= 0.01;
+        }
+        if self.moving_forward {
+            self.spherical_position.1 += 0.01;
+        }
+        if self.moving_backward {
+            self.spherical_position.1 -= 0.01;
+        }
+
+        let (s0, c0) = self.spherical_position.0.sin_cos();
+        let (s1, c1) = self.spherical_position.1.sin_cos();
+        let r = self.spherical_position.2;
+
+        self.position = (r * s0 * c1, r * s0 * s1, r * c0);
+    }
+
+    pub fn update(&mut self) {
+        match self.mode {
+            Mode::Cartesian => self.update_cartesian(),
+            Mode::Spherical => self.update_spherical()
         }
     }
 

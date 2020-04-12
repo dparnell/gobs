@@ -10,7 +10,7 @@ use gobs_core::volume::Volume;
 use gobs_core::raw_volume_sampler::RawVolumeSampler;
 use gobs_core::cubic_surface_extractor::extract_cubic_mesh;
 use support::main_loop::{run, VoxelVertex};
-use dot_vox::load_bytes;
+use dot_vox::{load_bytes};
 use std::time::SystemTime;
 
 fn main() {
@@ -47,7 +47,7 @@ fn main() {
 
         let x_offset = -model_region.get_width() / 2;
         let y_offset = -model_region.get_height() / 2;
-        let z_offset = - model_region.get_depth() / 2;
+        let z_offset = 0; //-model_region.get_depth() / 2;
 
         let scale_factor: f32 = 1.0 / (model_region.get_width() as f32);
 
