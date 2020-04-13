@@ -389,7 +389,7 @@ dependencies = [
 
 [[package]]
 name = "gobs"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "dot_vox",
  "glium",
@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "gobs-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "dot_vox",
  "gobs",
