@@ -3,11 +3,11 @@ extern crate dot_vox;
 
 use structopt::{StructOpt};
 
-use gobs_core::raw_volume::RawVolume;
-use gobs_core::region::Region;
-use gobs_core::volume::Volume;
-use gobs_core::raw_volume_sampler::RawVolumeSampler;
-use gobs_core::cubic_surface_extractor::extract_cubic_mesh;
+use gobs::raw_volume::RawVolume;
+use gobs::region::Region;
+use gobs::volume::Volume;
+use gobs::raw_volume_sampler::RawVolumeSampler;
+use gobs::cubic_surface_extractor::extract_cubic_mesh;
 use dot_vox::load;
 use std::fs::File;
 use std::io::{self, Error, Write};

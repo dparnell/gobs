@@ -4,11 +4,11 @@ extern crate dot_vox;
 
 mod support;
 
-use gobs_core::region::Region;
-use gobs_core::raw_volume::RawVolume;
-use gobs_core::volume::Volume;
-use gobs_core::raw_volume_sampler::RawVolumeSampler;
-use gobs_core::cubic_surface_extractor::extract_cubic_mesh;
+use gobs::region::Region;
+use gobs::raw_volume::RawVolume;
+use gobs::volume::Volume;
+use gobs::raw_volume_sampler::RawVolumeSampler;
+use gobs::cubic_surface_extractor::extract_cubic_mesh;
 use support::main_loop::{run, VoxelVertex};
 use dot_vox::{load_bytes};
 use std::time::SystemTime;
