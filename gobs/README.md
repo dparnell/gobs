@@ -24,4 +24,4 @@ Yes! Run one of the examples:
 
     renders an example vox file exported from [MagicaVoxel](https://ephtracy.github.io/)
     
-    ![example image](../img/model.png)
+    ![example image](img/model.png)
