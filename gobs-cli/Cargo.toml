@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 gobs-core = { path = "../gobs-core" }
+structopt = "0.3.13"
+dot_vox = "4.1.0"
