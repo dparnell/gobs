@@ -8,6 +8,7 @@ authors = ["Daniel Parnell <me@danielparnell.com>"]
 homepage = "https://github.com/dparnell/gobs"
 license = "Creative Commons Attribution 4.0 International (CC BY 4.0)"
 keywords = ["voxel"]
+description = "A port of some parts of PolyVox from C++ to rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
