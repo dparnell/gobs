@@ -6,7 +6,7 @@ readme = "README.md"
 repository = "https://github.com/dparnell/gobs"
 authors = ["Daniel Parnell <me@danielparnell.com>"]
 homepage = "https://github.com/dparnell/gobs"
-license = "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+license = "CC-BY-4.0"
 keywords = ["voxel"]
 description = "A port of some parts of PolyVox from C++ to rust"
 
