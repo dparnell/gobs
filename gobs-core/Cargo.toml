@@ -1,10 +1,20 @@
 [package]
 name = "gobs-core"
 version = "0.1.0"
-authors = ["Daniel Parnell <me@danielparnell.com>"]
 edition = "2018"
+readme = "README.md"
+repository = "https://github.com/dparnell/gobs"
+authors = ["Daniel Parnell <me@danielparnell.com>"]
+homepage = "https://github.com/dparnell/gobs"
+license = "Creative Commons Attribution 4.0 International (CC BY 4.0)"
+keywords = ["voxel"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 vek = "0.10.1"
+
+[dev-dependencies]
+glium = "0.27.0"
+glutin = "0.24.0"
+dot_vox = "4.1.0"

@@ -360,17 +360,10 @@ dependencies = [
 name = "gobs-core"
 version = "0.1.0"
 dependencies = [
- "vek 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gobs-examples"
-version = "0.1.0"
-dependencies = [
  "dot_vox 4.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.27.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.24.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobs-core 0.1.0",
+ "vek 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
