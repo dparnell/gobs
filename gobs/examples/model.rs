@@ -47,7 +47,7 @@ fn main() {
 
         let x_offset = -model_region.get_width() / 2;
         let y_offset = -model_region.get_height() / 2;
-        let z_offset = 0; //-model_region.get_depth() / 2;
+        let z_offset= -model_region.get_depth() / 2;
 
         let scale_factor: f32 = 1.0 / (model_region.get_width() as f32);
 

@@ -50,8 +50,8 @@ where F: Fn(&Display) -> VertexBufferAny {
             vertex: "
                 #version 330 core
 
-                layout(location = 0) in vec4 position;
-                layout(location = 1) in uint colour;
+                in vec4 position;
+                in uint colour;
 
                 // The usual matrices are provided
                 uniform mat4 projectionMatrix;
@@ -204,8 +204,8 @@ impl State {
             glutin::event::WindowEvent::CursorMoved { position, .. } => {
                 if self.mouse_down {
                     if let Some(pos) = self.last_mouse {
-                        self.th += ((position.y - pos.y) * 0.01) as f32;
-                        self.phi += ((position.x - pos.x) * 0.01) as f32;
+                        self.th -= ((position.y - pos.y) * 0.01) as f32;
+                        self.phi -= ((position.x - pos.x) * 0.01) as f32;
                     }
 
                     self.last_mouse = Some(position);
