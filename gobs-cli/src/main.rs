@@ -1,14 +1,14 @@
-extern crate structopt;
 extern crate dot_vox;
+extern crate structopt;
 
-use structopt::{StructOpt};
+use structopt::StructOpt;
 
+use dot_vox::load;
+use gobs::cubic_surface_extractor::extract_cubic_mesh;
 use gobs::raw_volume::RawVolume;
+use gobs::raw_volume_sampler::RawVolumeSampler;
 use gobs::region::Region;
 use gobs::volume::Volume;
-use gobs::raw_volume_sampler::RawVolumeSampler;
-use gobs::cubic_surface_extractor::extract_cubic_mesh;
-use dot_vox::load;
 use std::fs::File;
 use std::io::{self, Error, Write};
 
@@ -19,7 +19,7 @@ struct Options {
     vox_file: String,
 
     #[structopt(name = "out-file")]
-    output: Option<String>
+    output: Option<String>,
 }
 
 impl Options {
@@ -37,39 +37,65 @@ fn main() -> std::io::Result<()> {
 
     let vox_file = load(&options.vox_file).unwrap();
 
-    let hex_palette = vox_file.palette.iter().map(|rgba| {
-        let a = (rgba >> 24) as u8;
-        let b = (rgba >> 16) as u8;
-        let g = (rgba >> 8) as u8;
-        let r = *rgba as u8;
+    let hex_palette = vox_file
+        .palette
+        .iter()
+        .map(|rgba| {
+            let a = (rgba >> 24) as u8;
+            let b = (rgba >> 16) as u8;
+            let g = (rgba >> 8) as u8;
+            let r = *rgba as u8;
 
-        format!("{{\"r\":{},\"g\":{},\"b\":{},\"a\":{}}}", r, g, b, a)
-    } ).collect::<Vec<String>>().join(", ");
+            format!("{{\"r\":{},\"g\":{},\"b\":{},\"a\":{}}}", r, g, b, a)
+        })
+        .collect::<Vec<String>>()
+        .join(", ");
 
     writeln!(out, "{{")?;
     writeln!(out, " \"palette\": [{}],", hex_palette)?;
     writeln!(out, " \"models\": [")?;
     let mut first = true;
     for model in vox_file.models {
-        let region = Region::sized(model.size.x as i32, model.size.y as i32, model.size.z as i32);
-        let mut volume= RawVolume::new(region);
+        let region = Region::sized(
+            model.size.x as i32,
+            model.size.y as i32,
+            model.size.z as i32,
+        );
+        let mut volume = RawVolume::new(region);
 
         for voxel in model.voxels {
-            volume.set_voxel_at(voxel.x as i32, voxel.y as i32, voxel.z as i32, voxel.i).unwrap();
+            volume
+                .set_voxel_at(voxel.x as i32, voxel.y as i32, voxel.z as i32, voxel.i)
+                .unwrap();
         }
 
-        let mut sampler = RawVolumeSampler::new(&volume);
-        let mesh = extract_cubic_mesh(&mut sampler, &volume.valid_region).unwrap();
+        let mesh = extract_cubic_mesh(
+            &mut RawVolumeSampler::new(&volume),
+            &volume.valid_region,
+            None,
+            None,
+        )
+        .unwrap();
 
-        let vertices = mesh.vertices.iter()
+        let vertices = mesh
+            .vertices()
+            .iter()
             .map(|v| {
                 let pos = v.decode();
-                format!("{{\"x\":{},\"y\":{},\"z\":{},\"c\":{}}}", pos.x, pos.y, pos.z, v.data)
+                format!(
+                    "{{\"x\":{},\"y\":{},\"z\":{},\"c\":{}}}",
+                    pos.x, pos.y, pos.z, v.data
+                )
             })
-            .collect::<Vec<String>>().join(",");
+            .collect::<Vec<String>>()
+            .join(",");
 
-        let polygons = mesh.indices.chunks(3).map(|tri| format!("[{},{},{}]", tri[0], tri[1], tri[2]))
-            .collect::<Vec<String>>().join(",");
+        let polygons = mesh
+            .indices()
+            .chunks(3)
+            .map(|tri| format!("[{},{},{}]", tri[0], tri[1], tri[2]))
+            .collect::<Vec<String>>()
+            .join(",");
 
         if first {
             first = false;

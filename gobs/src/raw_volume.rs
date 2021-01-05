@@ -1,16 +1,22 @@
-use crate::volume::{Volume, PositionError};
 use crate::region::Region;
+use crate::volume::{PositionError, Volume};
 use crate::voxel::Voxel;
 
-pub struct RawVolume<T> where T: Voxel {
+pub struct RawVolume<T>
+where
+    T: Voxel,
+{
     pub data: Vec<T>,
     pub border_value: T,
     pub valid_region: Region,
 }
 
-impl <T> RawVolume<T> where T: Voxel {
+impl<T> RawVolume<T>
+where
+    T: Voxel,
+{
     pub fn new(ref region: Region) -> Self {
-        RawVolume{
+        RawVolume {
             data: vec![Default::default(); region.get_volume() as usize],
             border_value: Default::default(),
             valid_region: region.clone(),
@@ -42,17 +48,25 @@ impl <T> RawVolume<T> where T: Voxel {
     }
 }
 
-impl <T> Volume<T> for RawVolume<T> where T: Voxel {
+impl<T> Volume<T> for RawVolume<T>
+where
+    T: Voxel,
+{
     fn get_region(&self) -> &Region {
         &self.valid_region
     }
 
     fn get_voxel_at(&self, x: i32, y: i32, z: i32) -> T {
-        self.get_offset(x, y, z).map_or(self.border_value, |offset| { self.data[offset] })
+        self.get_offset(x, y, z)
+            .map_or(self.border_value, |offset| self.data[offset])
     }
 
     fn set_voxel_at(&mut self, x: i32, y: i32, z: i32, voxel: T) -> Result<(), PositionError> {
-        self.get_offset(x, y, z).map_or(Err(PositionError{}),|offset| { self.data[offset] = voxel; Ok(()) })
+        self.get_offset(x, y, z)
+            .map_or(Err(PositionError {}), |offset| {
+                self.data[offset] = voxel;
+                Ok(())
+            })
     }
 
     fn calculate_size_in_bytes(&self) -> usize {

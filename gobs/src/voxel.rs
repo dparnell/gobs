@@ -1,5 +1,4 @@
-
-pub trait Voxel : Default + Copy + PartialEq + std::fmt::Debug {
+pub trait Voxel: Default + Copy + PartialEq + std::fmt::Debug {
     fn is_empty(self) -> bool;
 }
 

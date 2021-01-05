@@ -1,21 +1,21 @@
 [package]
 name = "gobs"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/dparnell/gobs"
 authors = ["Daniel Parnell <me@danielparnell.com>"]
 homepage = "https://github.com/dparnell/gobs"
 license = "CC-BY-4.0"
-keywords = ["voxel"]
-description = "A port of some parts of PolyVox from C++ to rust"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+keywords = ["3d", "geometry", "meshing", "voxel" ]
+categories = ["graphics", "multimedia", "rendering"]
+description = "A port of some parts of PolyVox from C++ to Rust"
 
 [dependencies]
-vek = "0.10.1"
+vek = "0.13.0"
 
 [dev-dependencies]
-glium = "0.27.0"
-glutin = "0.24.0"
 dot_vox = "4.1.0"
+glium = "0.29.0"
+glutin = "0.26.0"
+itertools = "0.10.0"

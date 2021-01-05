@@ -1,7 +1,7 @@
-use gobs_core::region::Region;
+use gobs_core::cubic_surface_extractor::extract_cubic_mesh;
 use gobs_core::raw_volume::RawVolume;
 use gobs_core::raw_volume_sampler::RawVolumeSampler;
-use gobs_core::cubic_surface_extractor::extract_cubic_mesh;
+use gobs_core::region::Region;
 use gobs_core::volume::Volume;
 
 #[test]
@@ -30,4 +30,3 @@ fn combine_two_voxels_case() {
     assert_eq!(mesh.vertices.len(), 8);
     assert_eq!(mesh.indices.len(), 36);
 }
-
