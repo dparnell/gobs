@@ -3,3 +3,8 @@ members = [
     "gobs",
     "gobs-cli"
 ]
+
+[profile.release]
+lto = "on"
+opt-level = 3
+codegen-units = 1

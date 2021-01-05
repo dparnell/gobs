@@ -1,10 +1,10 @@
-#[allow(unused_imports)]
-use glium::{glutin, Surface};
-use glium::vertex::VertexBufferAny;
-use glium::Display;
 use crate::support;
 use crate::support::camera::Mode;
-use crate::support::{rotation_matrix, multiply_matrix, scale_matrix};
+use crate::support::{multiply_matrix, rotation_matrix, scale_matrix};
+use glium::vertex::VertexBufferAny;
+use glium::Display;
+#[allow(unused_imports)]
+use glium::{glutin, Surface};
 
 use glutin::dpi::PhysicalPosition;
 use glutin::event::*;
@@ -12,7 +12,7 @@ use glutin::event::*;
 #[derive(Copy, Clone)]
 pub struct VoxelVertex {
     pub position: [f32; 4],
-    pub colour: u32
+    pub colour: u32,
 }
 implement_vertex!(VoxelVertex, position, colour);
 
@@ -29,12 +29,13 @@ struct State {
     moving_out: bool,
 
     mouse_down: bool,
-    last_mouse: Option<PhysicalPosition<f64>>
+    last_mouse: Option<PhysicalPosition<f64>>,
 }
 
 pub fn run<F>(build_display_list: F)
-where F: Fn(&Display) -> VertexBufferAny {
-
+where
+    F: Fn(&Display) -> VertexBufferAny,
+{
     // building the display, ie. the main object
     let event_loop = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new();
@@ -118,7 +119,8 @@ where F: Fn(&Display) -> VertexBufferAny {
                 }
             ",
         },
-    ).unwrap();
+    )
+    .unwrap();
 
     //
     let mut camera = support::camera::CameraState::new(Mode::Cartesian);
@@ -128,7 +130,19 @@ where F: Fn(&Display) -> VertexBufferAny {
     camera.set_look_direction((-cx, -cy, -cz));
     camera.update();
 
-    let mut state = State{ r: 1.0, th: 0.0, phi: 0.0, moving_up: false, moving_left: false, moving_down: false, moving_right: false, moving_in: false, moving_out: false, mouse_down: false, last_mouse: None };
+    let mut state = State {
+        r: 1.0,
+        th: 0.0,
+        phi: 0.0,
+        moving_up: false,
+        moving_left: false,
+        moving_down: false,
+        moving_right: false,
+        moving_in: false,
+        moving_out: false,
+        mouse_down: false,
+        last_mouse: None,
+    };
 
     // the main loop
     support::start_loop(event_loop, move |events| {
@@ -144,17 +158,23 @@ where F: Fn(&Display) -> VertexBufferAny {
             depth: glium::Depth {
                 test: glium::DepthTest::IfLess,
                 write: true,
-                .. Default::default()
+                ..Default::default()
             },
-            .. Default::default()
+            ..Default::default()
         };
 
         // drawing a frame
         let mut target = display.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
-        target.draw(&vertex_buffer,
-                    &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
-                    &program, &uniforms, &params).unwrap();
+        target
+            .draw(
+                &vertex_buffer,
+                &glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList),
+                &program,
+                &uniforms,
+                &params,
+            )
+            .unwrap();
         target.finish().unwrap();
 
         let mut action = support::Action::Continue;
@@ -168,7 +188,7 @@ where F: Fn(&Display) -> VertexBufferAny {
                 },
                 _ => (),
             }
-        };
+        }
 
         action
     });
@@ -184,23 +204,22 @@ impl State {
     fn process_input(&mut self, event: &glutin::event::WindowEvent) {
         let input = match *event {
             glutin::event::WindowEvent::KeyboardInput { input, .. } => input,
-            glutin::event::WindowEvent::MouseWheel { delta, ..}=> {
-
+            glutin::event::WindowEvent::MouseWheel { delta, .. } => {
                 match delta {
                     glutin::event::MouseScrollDelta::LineDelta(_x, y) => {
                         self.r += y * 0.1;
-                    },
-                    _ => ()
+                    }
+                    _ => (),
                 }
                 return;
-            },
+            }
 
             glutin::event::WindowEvent::MouseInput { state, button, .. } => {
                 if button == MouseButton::Left {
                     self.mouse_down = state == ElementState::Pressed;
                 }
                 return;
-            },
+            }
             glutin::event::WindowEvent::CursorMoved { position, .. } => {
                 if self.mouse_down {
                     if let Some(pos) = self.last_mouse {
@@ -213,7 +232,7 @@ impl State {
                     self.last_mouse = None
                 }
                 return;
-            },
+            }
             _ => return,
         };
         let pressed = input.state == glutin::event::ElementState::Pressed;

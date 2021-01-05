@@ -1,8 +1,10 @@
-use vek::vec3::Vec3;
 use crate::voxel::Voxel;
+use vek::vec3::Vec3;
 
-pub trait Sampler<T> where T: Voxel  {
-
+pub trait Sampler<T>
+where
+    T: Voxel,
+{
     fn get_position(&self) -> Vec3<i32>;
     fn get_voxel(&self) -> T;
     fn set_position(&mut self, x: i32, y: i32, z: i32);

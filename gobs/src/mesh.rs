@@ -1,47 +1,86 @@
 use vek::vec3::Vec3;
 
-pub struct Mesh<T> {
-    pub indices: Vec<i32>,
-    pub vertices: Vec<T>,
-    pub offset: Vec3<i32>
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum FaceArity {
+    Three,
+    Four,
 }
 
-impl <T> Mesh<T>  {
-    pub fn new() -> Self {
-        Mesh{
+/// A polygon mesh.
+pub struct Mesh<T> {
+    pub(crate) indices: Vec<i32>,
+    pub(crate) vertices: Vec<T>,
+    pub(crate) offset: Vec3<i32>,
+    pub(crate) face_arity: FaceArity,
+}
+
+impl<T> Mesh<T> {
+    /// Creates a new mesh. The `face_arity` argument determines if this is a triangle or quad mesh.
+    pub fn new(face_arity: FaceArity) -> Self {
+        Mesh {
             indices: vec![],
             vertices: vec![],
-            offset: Default::default()
+            offset: Default::default(),
+            face_arity,
         }
     }
 
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.indices.is_empty() && self.vertices.is_empty()
     }
 
+    #[inline]
     pub fn clear(&mut self) {
         self.indices.clear();
         self.vertices.clear();
     }
 
+    #[inline]
     pub fn add_vertex(&mut self, vertex: T) -> usize {
         self.vertices.push(vertex);
 
         self.vertices.len() - 1
     }
 
+    #[inline]
     pub fn add_triangle(&mut self, vertex_0: i32, vertex_1: i32, vertex_2: i32) {
+        assert!(FaceArity::Three == self.face_arity);
         self.indices.push(vertex_0);
         self.indices.push(vertex_1);
         self.indices.push(vertex_2);
     }
 
+    #[inline]
+    pub fn add_quad(&mut self, vertex_0: i32, vertex_1: i32, vertex_2: i32, vertex_3: i32) {
+        assert!(FaceArity::Four == self.face_arity);
+        self.indices.push(vertex_0);
+        self.indices.push(vertex_1);
+        self.indices.push(vertex_2);
+        self.indices.push(vertex_3);
+    }
+
+    #[inline]
     pub fn set_offset(&mut self, offset: Vec3<i32>) {
         self.offset = offset;
     }
 
-    pub fn get_offset(self) -> Vec3<i32> {
-        self.offset
+    pub fn indices(&self) -> &[i32] {
+        &self.indices
+    }
+
+    pub fn vertices(&self) -> &[T] {
+        &self.vertices
+    }
+
+    #[inline]
+    pub fn offset(&self) -> &[i32] {
+        &self.offset
+    }
+
+    #[inline]
+    pub fn face_arity(&self) -> FaceArity {
+        self.face_arity.clone()
     }
 
     pub fn remove_unused_vertices(&mut self) {

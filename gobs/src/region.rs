@@ -1,46 +1,46 @@
 use vek::vec3::Vec3;
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct Region {
     pub lower_x: i32,
     pub lower_y: i32,
     pub lower_z: i32,
     pub upper_x: i32,
     pub upper_y: i32,
-    pub upper_z: i32
+    pub upper_z: i32,
 }
 
 impl Region {
     pub fn new(lower: Vec3<i32>, upper: Vec3<i32>) -> Self {
-        Region{
+        Region {
             lower_x: lower.x,
             lower_y: lower.y,
             lower_z: lower.z,
             upper_x: upper.x,
             upper_y: upper.y,
-            upper_z: upper.z
+            upper_z: upper.z,
         }
     }
 
     pub fn cubic(size: i32) -> Self {
-        Region{
+        Region {
             lower_x: 0,
             lower_y: 0,
             lower_z: 0,
             upper_x: size,
             upper_y: size,
-            upper_z: size
+            upper_z: size,
         }
     }
 
     pub fn sized(width: i32, height: i32, depth: i32) -> Self {
-        Region{
+        Region {
             lower_x: 0,
             lower_y: 0,
             lower_z: 0,
             upper_x: width,
             upper_y: height,
-            upper_z: depth
+            upper_z: depth,
         }
     }
 
@@ -65,30 +65,40 @@ impl Region {
     }
 
     pub fn contains_point(&self, x: i32, y: i32, z: i32) -> bool {
-        x >= self.lower_x && x <= self.upper_x && y >= self.lower_y && y <= self.upper_y && z >= self.lower_z && z <= self.upper_z
+        x >= self.lower_x
+            && x <= self.upper_x
+            && y >= self.lower_y
+            && y <= self.upper_y
+            && z >= self.lower_z
+            && z <= self.upper_z
     }
 
     pub fn contains_point_excluding_boundary(&self, x: i32, y: i32, z: i32, boundary: i32) -> bool {
-        x >= (self.lower_x + boundary) && x <= (self.upper_x - boundary) && y >= (self.lower_y + boundary) && y <= (self.upper_y - boundary) && z >= (self.lower_z + boundary) && z <= (self.upper_z - boundary)
+        x >= (self.lower_x + boundary)
+            && x <= (self.upper_x - boundary)
+            && y >= (self.lower_y + boundary)
+            && y <= (self.upper_y - boundary)
+            && z >= (self.lower_z + boundary)
+            && z <= (self.upper_z - boundary)
     }
 
     pub fn get_lower_corner(&self) -> Vec3<i32> {
         Vec3 {
             x: self.lower_x,
             y: self.lower_y,
-            z: self.lower_z
+            z: self.lower_z,
         }
     }
 
-    pub fn contains_point_in_x(&self, x:i32) -> bool {
+    pub fn contains_point_in_x(&self, x: i32) -> bool {
         x >= self.lower_x && x <= self.upper_x
     }
 
-    pub fn contains_point_in_y(&self, y:i32) -> bool {
+    pub fn contains_point_in_y(&self, y: i32) -> bool {
         y >= self.lower_y && y <= self.upper_y
     }
 
-    pub fn contains_point_in_z(&self, z:i32) -> bool {
+    pub fn contains_point_in_z(&self, z: i32) -> bool {
         z >= self.lower_z && z <= self.upper_z
     }
 }
